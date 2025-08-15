@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+    rel="stylesheet"
+/>
+</head>
+<body>
+    <main class="p-4 bg-gray-100 dark:bg-gray-800 h-screen w-screen">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white">My Drive</h1>
+            <div class="flex gap-4">
+                <button onclick="showPopUp()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    <i class="ri-upload-2-line mr-2"></i>Upload File
+                </button>
+                <a href="/user/logout" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    <i class="ri-logout-box-line mr-2"></i>Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- File List Section -->
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Your Files</h2>
+            <div id="fileList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Files will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Upload Modal -->
+        <div class="pop hidden backdrop-blur fixed top-0 left-0 h-screen w-screen flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Upload File</h3>
+                    <button onclick="hidePopUp()" class="text-gray-500 dark:text-gray-400 text-xl hover:text-gray-700 dark:hover:text-gray-200">
+                        <i class="ri-close-fill"></i>
+                    </button>
+                </div>
+                
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="flex items-center justify-center w-full">
+                        <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                </svg>
+                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Any file type (MAX. 10MB)</p>
+                            </div>
+                            <input id="dropzone-file" name="file" type="file" class="hidden" required />
+                        </label>
+                    </div>
+                    
+                    <div class="mt-4 flex gap-2">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex-1">
+                            <i class="ri-upload-2-line mr-2"></i>Upload File
+                        </button>
+                        <button type="button" onclick="hidePopUp()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script>
+        function showPopUp(){
+            document.querySelector('.pop').classList.remove('hidden');
+        }
+        
+        function hidePopUp(){
+            document.querySelector('.pop').classList.add('hidden');
+            document.getElementById('uploadForm').reset();
+        }
+
+        // Handle file upload
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('dropzone-file');
+            
+            if (fileInput.files.length === 0) {
+                alert('Please select a file');
+                return;
+            }
+            
+            formData.append('file', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('File uploaded successfully!');
+                    hidePopUp();
+                    loadFiles(); // Reload file list
+                } else {
+                    alert('Upload failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload failed. Please try again.');
+            }
+        });
+
+        // Load user's files
+        async function loadFiles() {
+            try {
+                const response = await fetch('/upload/files');
+                const files = await response.json();
+                
+                const fileList = document.getElementById('fileList');
+                fileList.innerHTML = '';
+                
+                if (files.length === 0) {
+                    fileList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 col-span-full text-center">No files uploaded yet.</p>';
+                    return;
+                }
+                
+                files.forEach(file => {
+                    const fileCard = document.createElement('div');
+                    fileCard.className = 'bg-gray-50 dark:bg-gray-600 rounded-lg p-4 border border-gray-200 dark:border-gray-500';
+                    fileCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-800 dark:text-white truncate">${file.originalname}</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">${new Date(file.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="${file.path}" target="_blank" class="text-blue-500 hover:text-blue-700">
+                                    <i class="ri-external-link-line"></i>
+                                </a>
+                                <button onclick="deleteFile('${file._id}')" class="text-red-500 hover:text-red-700">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    fileList.appendChild(fileCard);
+                });
+            } catch (error) {
+                console.error('Error loading files:', error);
+            }
+        }
+
+        // Delete file
+        async function deleteFile(fileId) {
+            if (!confirm('Are you sure you want to delete this file?')) return;
+            
+            try {
+                const response = await fetch(`/upload/${fileId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('File deleted successfully!');
+                    loadFiles(); // Reload file list
+                } else {
+                    alert('Delete failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Delete failed. Please try again.');
+            }
+        }
+
+        // Load files when page loads
+        document.addEventListener('DOMContentLoaded', loadFiles);
+    </script>
+</body>
+</html>
