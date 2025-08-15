@@ -12,6 +12,7 @@
 1. Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
 2. Create a free account and cluster
 3. Create a database user with read/write permissions
+4. Get your connection string (looks like: `mongodb+srv://username:password@cluster.mongodb.net/drive`)
 
 ## Step 2: Set up Cloudinary
 
@@ -66,7 +67,15 @@
 3. Add your custom domain
 4. Follow DNS configuration instructions
 
+## Environment Variables Reference
 
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MONGO_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/drive` |
+| `JWT_SECRET` | Secret key for JWT tokens | `your_super_secret_key_here` |
+| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name | `mycloud` |
+| `CLOUDINARY_API_KEY` | Your Cloudinary API key | `123456789012345` |
+| `CLOUDINARY_API_SECRET` | Your Cloudinary API secret | `abcdefghijklmnop` |
 
 ## Important Notes
 

@@ -26,7 +26,7 @@ A Node.js application for file upload, storage, and management with user authent
 
 3. Create a `.env` file in the root directory with the following variables:
    ```
-   MONGO_URI=
+   MONGO_URI=mongodb://localhost:27017/drive
    JWT_SECRET=your_jwt_secret_key_here
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
