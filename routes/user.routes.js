@@ -68,7 +68,7 @@ async(req,res)=>{
         email:user.email,
         username:user.username
     },
-    process.env.JWT_SECRET,)
+    process.env.JWT_SECRET)
     res.cookie('token',token)
     res.redirect('/home')
     

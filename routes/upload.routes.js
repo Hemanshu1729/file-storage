@@ -8,6 +8,6 @@ const router = express.Router();
 // Protected routes - requires authentication
 router.post('/', authenticateToken, upload.single('file'), uploadImage);
 router.get('/files', authenticateToken, getUserFiles);
-// router.delete('/:fileId', authenticateToken, deleteFile);
+router.delete('/:fileId', authenticateToken, deleteFile);
 
 module.exports = router;
