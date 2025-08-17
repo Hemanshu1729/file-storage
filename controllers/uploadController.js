@@ -1,13 +1,5 @@
 const cloudinary = require('../config/cloudinary');
 const fileModel = require('../models/files.model');
-const fs = require('fs');
-const path = require('path');
-
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
 
 const uploadImage = async (req, res) => {
     try {
@@ -15,8 +7,12 @@ const uploadImage = async (req, res) => {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
+        // Convert buffer to base64 for Cloudinary
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+
         // Upload to Cloudinary
-        const result = await cloudinary.uploader.upload(req.file.path, {
+        const result = await cloudinary.uploader.upload(dataURI, {
             folder: 'uploads'
         });
 
@@ -27,11 +23,6 @@ const uploadImage = async (req, res) => {
             user: req.user._id
         });
 
-        // Remove local file after upload
-        if (fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-
         res.json({
             message: 'File uploaded successfully',
             file: newFile,
@@ -40,12 +31,6 @@ const uploadImage = async (req, res) => {
 
     } catch (error) {
         console.error('Upload error:', error);
-        
-        // Clean up local file if upload failed
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-        
         res.status(500).json({ error: error.message });
     }
 };
